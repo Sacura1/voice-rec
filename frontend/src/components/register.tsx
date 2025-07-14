@@ -26,7 +26,7 @@ const Register = () => {
         e.preventDefault()
 
         try {
-        const   response  = await axios.post('http://localhost:3000/register', form,
+        const   response  = await axios.post(`${import.meta.env.VITE_API_URL}/register`, form,
             {withCredentials:true}
         )
         console.log(response.data.user.username)
