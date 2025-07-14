@@ -32,8 +32,7 @@ dotenv.config()
 
 const corsOptions = {
   origin: [
-    'https://voice-rec-front.onrender.com',
-    'http://localhost:10000'
+    'https://voice-rec-frontend.onrender.com'
     
   ],
   credentials: true,
