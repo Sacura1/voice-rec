@@ -2,8 +2,11 @@ import axios from "axios"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 
+import { useAuth } from "../context/auth"
+
 const Login = () => {
   const [form,setForm] = useState({password:"",email:""})
+  const {setUser} = useAuth()
 
   const navigate = useNavigate()
   const home = () => {
@@ -28,7 +31,7 @@ const Login = () => {
         const   response  = await axios.post(`${import.meta.env.VITE_API_URL}/login`, form,{
             withCredentials:true
         })
-        console.log(response.data.user.username)
+        setUser(response.data.user.username)
         if (response.data){
             home()
         }
