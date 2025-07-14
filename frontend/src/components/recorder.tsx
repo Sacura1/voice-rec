@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import{ useState, useRef, useEffect } from 'react';
 import { Mic, MicOff, Play, Pause, Download, Trash2, Send } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 
@@ -159,7 +159,7 @@ const VoiceRecorder = () => {
     formData.append('username', username ?? '')
 
     try {
-      const response = await fetch('http://localhost:3000/upload-recording', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/upload-recording`, {
         method: 'POST',
         body: formData
       });
