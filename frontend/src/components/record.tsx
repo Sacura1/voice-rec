@@ -23,6 +23,7 @@ const Home = () => {
   const [progress, setProgress] = useState(0);
   const progressRef = useRef<HTMLDivElement>(null);
 
+
   const fetchRecordings = async () => {
     console.log(user)
     try {
@@ -45,6 +46,8 @@ const Home = () => {
     fetchRecordings();
     return () => {};
   }, []);
+  const url =  `https://www.anonymousrecording.com/${user?.username}`
+
 
   const formatDateTime = (dateTimeString: string) => {
     try {
@@ -147,6 +150,14 @@ const Home = () => {
       }
     }
   };
+  
+  const handleCopy = () => {
+    navigator.clipboard.writeText(url).then(() => {
+      alert("Text copied to clipboard!");
+    }).catch(err => {
+      console.error("Failed to copy text: ", err);
+    });
+  };
 
   const playNext = () => {
     if (playingIndex !== null && playingIndex < recordings.length - 1) {
@@ -227,6 +238,18 @@ const Home = () => {
               <p className="text-gray-400 flex items-center gap-2 mt-1">
                 <User size={16} />
                 Welcome,  <span className="text-white font-semibold">{user?.username}</span>
+              </p>
+              <div className=" text-gray-400 flex items-center gap-2 mt-1">
+                <p>Your Link</p>
+                <p>{url}</p>
+               <button className="w-small relative overflow-hidden bg-white
+                text-black font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:bg-gray-100 active:scale-95 group disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleCopy}>Copy</button>
+               </div>
+              
+           
+
+              <p>
               </p>
             </div>
           </div>
