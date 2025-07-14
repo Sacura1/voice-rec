@@ -25,7 +25,7 @@ const Home = () => {
   const fetchRecordings = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3000/recordings/`,{
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/recordings/`,{
         credentials: "include"
       });
       const data = await response.json();
