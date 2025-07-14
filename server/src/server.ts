@@ -14,7 +14,6 @@ import { Strategy } from "passport-local";
 import session from "express-session";
 import env from "dotenv";
 
-// Extend Express Request interface to include passport user
 declare global {
   namespace Express {
     interface User {
@@ -33,6 +32,7 @@ dotenv.config()
 
 const corsOptions = {
   origin: [
+    'https://voice-rec-front.onrender.com'
     
   ],
   credentials: true,
@@ -108,6 +108,7 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024,
   }
 });
+
 
 app.post("/register", async (req: Request, res: Response) : Promise<any> => {
   const { email, password, username } = req.body;
