@@ -33,28 +33,32 @@ dotenv.config()
 const corsOptions = {
   origin: [
     'https://voice-rec-frontend.onrender.com',
-    'https://voice-rec-front.onrender.com'
-    
+    'https://voice-rec-front.onrender.com',
+    'http://localhost:10000',
+    'http://localhost:3000' 
   ],
   credentials: true,
   optionsSuccessStatus: 200,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], 
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 };
-app.use(cors(corsOptions));
 
 const port = 3000
 const saltRounds = 10;
 env.config();
 
+app.use(cors(corsOptions));
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || (() => { throw new Error("SESSION_SECRET is not defined"); })(),
     resave: false,
-    saveUninitialized: true,
-    cookie:{
-      secure:true,
-      sameSite:'none'
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production', 
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', 
+      httpOnly: true, 
+      maxAge: 24 * 60 * 60 * 1000 
     }
   })
 );
@@ -74,7 +78,13 @@ const db = new Pool({
     rejectUnauthorized: false
   }
 });
-db.connect();
+
+const requireAuth = (req: Request, res: Response, next: NextFunction): any => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Unauthorized: Please log in" });
+  }
+  next();
+};
 
 const uploadsDir = path.join(__dirname, 'uploads/recordings');
 if (!fs.existsSync(uploadsDir)) {
@@ -114,11 +124,10 @@ const upload = multer({
   }
 });
 
-
-app.post("/register", async (req: Request, res: Response) : Promise<any> => {
+app.post("/register", async (req: Request, res: Response): Promise<any> => {
   const { email, password, username } = req.body;
   
-  console.log(req.body);
+  console.log("Registration attempt:", { email, username });
   
   try {
     const checkResult = await db.query("SELECT * FROM users WHERE email = $1", [email]);
@@ -137,12 +146,12 @@ app.post("/register", async (req: Request, res: Response) : Promise<any> => {
     const user = result.rows[0];
     
     req.login(user, (err) => {
-      console.log("logged in ")
       if (err) {
         console.error("Auto-login error:", err);
         return res.status(500).json({ error: "Registration successful but login failed" });
       }
       
+      console.log("User registered and logged in:", user.username);
       res.status(201).json({
         message: "User registered successfully",
         user: {
@@ -162,6 +171,7 @@ app.post("/register", async (req: Request, res: Response) : Promise<any> => {
 app.post("/login", passport.authenticate("local", {
   failureMessage: true
 }), (req: Request, res: Response) => {
+  console.log("User logged in:", req.user?.username);
   res.json({
     message: "Login successful",
     user: {
@@ -172,7 +182,6 @@ app.post("/login", passport.authenticate("local", {
   });
 });
 
-
 app.post("/upload-recording", upload.single('audio'), async (req: Request, res: Response): Promise<any> => {
   try {
     if (!req.file) {
@@ -181,6 +190,8 @@ app.post("/upload-recording", upload.single('audio'), async (req: Request, res: 
 
     const { duration, timestamp } = req.body;
     const username = req.body.username.toLowerCase();
+
+    console.log("Uploading recording to user:", username);
 
     const fileBuffer = await fs.promises.readFile(req.file.path);
 
@@ -191,20 +202,18 @@ app.post("/upload-recording", upload.single('audio'), async (req: Request, res: 
       [username, fileBuffer, timestamp]
     );
 
-    res.status(200).json("Successfully Sent!");
+    res.status(200).json({ message: "Successfully uploaded!" });
   } catch (error) {
     console.error("Upload error:", error);
     res.status(500).json({ error: "Failed to upload audio" });
   }
 });
 
-app.get("/recordings", async (req: Request, res: Response): Promise<any> => {
+app.get("/recordings", requireAuth, async (req: Request, res: Response): Promise<any> => {
   try {
-    const username = req.user?.username?.toLowerCase();
+    const username = req.user!.username.toLowerCase();
 
-    if (!username) {
-      return res.status(401).json({ error: "Unauthorized: no username found" });
-    }
+    console.log("Fetching recordings for user:", username);
 
     const result = await db.query(
       `SELECT audio, created_at FROM recordings WHERE username = $1 ORDER BY created_at DESC`,
@@ -216,6 +225,7 @@ app.get("/recordings", async (req: Request, res: Response): Promise<any> => {
       created_at: recording.created_at,
     }));
 
+    console.log(`Found ${recordings.length} recordings for user:`, username);
     res.json({ recordings });
   } catch (error) {
     console.error("Get recordings error:", error);
@@ -223,9 +233,11 @@ app.get("/recordings", async (req: Request, res: Response): Promise<any> => {
   }
 });
 
-
-
 app.get("/auth/status", (req: Request, res: Response) => {
+  console.log("Auth status check - isAuthenticated:", req.isAuthenticated());
+  console.log("Session ID:", req.sessionID);
+  console.log("User:", req.user?.username);
+  
   if (req.isAuthenticated()) {
     res.json({
       authenticated: true,
@@ -240,12 +252,18 @@ app.get("/auth/status", (req: Request, res: Response) => {
   }
 });
 
-app.get("/logout", (req: Request, res: Response, next: NextFunction) => {
+app.post("/logout", (req: Request, res: Response, next: NextFunction) => {
   req.logout(function (err) {
     if (err) {
       return next(err);
     }
-    res.json({ message: "Logout successful" });
+    req.session.destroy((err) => {
+      if (err) {
+        return next(err);
+      }
+      res.clearCookie('connect.sid'); 
+      res.json({ message: "Logout successful" });
+    });
   });
 });
 
@@ -282,15 +300,21 @@ passport.use(
 );
 
 passport.serializeUser((user: Express.User, done) => {
+  console.log("Serializing user:", user.username);
   done(null, user.id); 
 });
 
 passport.deserializeUser(async (id: number, done) => {
   try {
     const result = await db.query("SELECT id, email, username FROM users WHERE id = $1", [id]);
-    if (result.rows.length === 0) return done(null, false);
+    if (result.rows.length === 0) {
+      console.log("User not found during deserialization:", id);
+      return done(null, false);
+    }
+    console.log("Deserializing user:", result.rows[0].username);
     done(null, result.rows[0]); 
   } catch (err) {
+    console.error("Deserialization error:", err);
     done(err);
   }
 });
