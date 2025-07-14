@@ -15,8 +15,8 @@ const VoiceRecorder = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const intervalRef = useRef<number | null>(null);
-  const playbackIntervalRef = useRef<number | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const playbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const {username }= useParams()
   useEffect(() => {
     return () => {
