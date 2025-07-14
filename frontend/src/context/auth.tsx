@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const response = await fetch('http://localhost:3000/auth/status', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/status`, {
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      await fetch('your-backend-url/logout', {
+      await fetch(`${import.meta.env.VITE_API_URL}/logout`, {
         method: 'POST',
         credentials: 'include',
       });
