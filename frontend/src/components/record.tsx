@@ -6,7 +6,7 @@ import axios from "axios";
 
 interface Recording {
   audio: string;
-  date_time: string;
+  created_at: string;
 }
 
 const Home = () => {
@@ -284,7 +284,7 @@ const Home = () => {
         ) : (
           <div className="space-y-4">
             {recordings.map((recording, index) => {
-              const { date, time } = formatDateTime(recording.date_time);
+              const { date, time } = formatDateTime(recording.created_at);
               // const isCurrentlyPlaying = playingIndex === index;
               
               return (
@@ -320,7 +320,7 @@ const Home = () => {
                       </button>
                       
                       <button
-                        onClick={() => downloadAudio(recording.audio, recording.date_time)}
+                        onClick={() => downloadAudio(recording.audio, recording.created_at)}
                         className="group/btn relative p-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-white/10 transform hover:scale-105 backdrop-blur-sm border border-white/10"
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 rounded-lg opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
@@ -353,7 +353,7 @@ const Home = () => {
                 Recording #{recordings.length - playingIndex}
               </h3>
               <p className="text-gray-400 text-sm">
-                {formatDateTime(recordings[playingIndex].date_time).date} • {formatDateTime(recordings[playingIndex].date_time).time}
+                {formatDateTime(recordings[playingIndex].created_at).date} • {formatDateTime(recordings[playingIndex].created_at).time}
               </p>
             </div>
 

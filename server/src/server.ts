@@ -51,10 +51,8 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET || (() => { throw new Error("SESSION_SECRET is not defined"); })(),
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie:{
-      secure:true,
-      sameSite: 'none'
     }
   })
 );
@@ -201,20 +199,19 @@ app.post("/upload-recording", upload.single('audio'), async (req: Request, res: 
 app.get("/recordings", async (req: Request, res: Response): Promise<any> => {
   try {
     const username = req.user?.username?.toLowerCase();
-    console.log(username)
 
     if (!username) {
       return res.status(401).json({ error: "Unauthorized: no username found" });
     }
 
     const result = await db.query(
-      `SELECT audio, created_at FROM recordings WHERE username = $1 ORDER BY date_time DESC`,
+      `SELECT audio, created_at FROM recordings WHERE username = $1 ORDER BY created_at DESC`,
       [username]
     );
 
     const recordings = result.rows.map(recording => ({
       audio: recording.audio.toString("base64"),
-      date_time: recording.date_time,
+      created_at: recording.created_at,
     }));
 
     res.json({ recordings });
