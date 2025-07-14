@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Play, Pause, Download, Clock, User, Headphones, X, SkipBack, SkipForward } from "lucide-react";
 import { useAuth } from "../context/auth";
 
+
 interface Recording {
   audio: string;
   date_time: string;
@@ -208,14 +209,6 @@ const Home = () => {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const getRemainingTime = () => {
-  if (!isFinite(duration) || !isFinite(currentTime) || isNaN(duration) || isNaN(currentTime)) {
-    return 0;
-  }
-  const remaining = duration - currentTime;
-  return remaining > 0 ? remaining : 0;
-};
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800">
       {/* Header */}
@@ -291,8 +284,7 @@ const Home = () => {
           <div className="space-y-4">
             {recordings.map((recording, index) => {
               const { date, time } = formatDateTime(recording.date_time);
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const isCurrentlyPlaying = playingIndex === index;
+              // const isCurrentlyPlaying = playingIndex === index;
               
               return (
                 <div key={index} className="group p-6 bg-black/30 backdrop-blur-sm rounded-xl border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-xl hover:shadow-white/5">
