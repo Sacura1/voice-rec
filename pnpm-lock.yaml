@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      process:
+        specifier: ^0.11.10
+        version: 0.11.10
     devDependencies:
       '@types/node':
         specifier: ^24.0.13
@@ -24,6 +28,10 @@ packages:
     resolution: {integrity: sha512-FYz4wlXgkQwIPqhzC5TdNMLSE5+GS1IIDJZY/1ZiEPCT2S3COUVZeT5OW4BmW4r5LHLQuOosSwsvnroG9GR59Q==}
     engines: {node: '>=0.4'}
 
+  process@0.11.10:
+    resolution: {integrity: sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==}
+    engines: {node: '>= 0.6.0'}
+
   undici-types@7.8.0:
     resolution: {integrity: sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw==}
 
@@ -34,5 +42,7 @@ snapshots:
       undici-types: 7.8.0
 
   i@0.3.7: {}
+
+  process@0.11.10: {}
 
   undici-types@7.8.0: {}
