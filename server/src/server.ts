@@ -13,6 +13,7 @@ import passport from "passport";
 import { Strategy } from "passport-local";
 import session from "express-session";
 import env from "dotenv";
+import connectPgSimple from 'connect-pg-simple';
 
 declare global {
   namespace Express {
@@ -35,7 +36,7 @@ const corsOptions = {
     'https://voice-rec-frontend.onrender.com',
     'https://voice-rec-front.onrender.com',
     'http://localhost:10000',
-    'http://localhost:3000' 
+    'http://localhost:3000'
   ],
   credentials: true,
   optionsSuccessStatus: 200,
@@ -43,21 +44,37 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 };
 
-const port = 3000
+const port = process.env.PORT || 3000;
 const saltRounds = 10;
 env.config();
 
+const db = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
 app.use(cors(corsOptions));
+
+app.set('trust proxy', 1);
+
+const pgSession = connectPgSimple(session);
 
 app.use(
   session({
+    store: new pgSession({
+      pool: db,
+      tableName: 'session',
+      createTableIfMissing: true
+    }),
     secret: process.env.SESSION_SECRET || (() => { throw new Error("SESSION_SECRET is not defined"); })(),
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production', 
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', 
-      httpOnly: true, 
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000 
     }
   })
@@ -72,14 +89,11 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(passport.initialize());
 app.use(passport.session());
 
-const db = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
-
 const requireAuth = (req: Request, res: Response, next: NextFunction): any => {
+  console.log("Auth middleware - isAuthenticated:", req.isAuthenticated());
+  console.log("Auth middleware - session ID:", req.sessionID);
+  console.log("Auth middleware - user:", req.user?.username);
+  
   if (!req.isAuthenticated()) {
     return res.status(401).json({ error: "Unauthorized: Please log in" });
   }
@@ -152,6 +166,8 @@ app.post("/register", async (req: Request, res: Response): Promise<any> => {
       }
       
       console.log("User registered and logged in:", user.username);
+      console.log("Session ID after registration:", req.sessionID);
+      
       res.status(201).json({
         message: "User registered successfully",
         user: {
@@ -172,6 +188,8 @@ app.post("/login", passport.authenticate("local", {
   failureMessage: true
 }), (req: Request, res: Response) => {
   console.log("User logged in:", req.user?.username);
+  console.log("Session ID after login:", req.sessionID);
+  
   res.json({
     message: "Login successful",
     user: {
@@ -191,7 +209,7 @@ app.post("/upload-recording", upload.single('audio'), async (req: Request, res: 
     const { duration, timestamp } = req.body;
     const username = req.body.username.toLowerCase();
 
-    console.log("Uploading recording to user:", username);
+    console.log("Uploading recording for user:", username);
 
     const fileBuffer = await fs.promises.readFile(req.file.path);
 
@@ -261,7 +279,7 @@ app.post("/logout", (req: Request, res: Response, next: NextFunction) => {
       if (err) {
         return next(err);
       }
-      res.clearCookie('connect.sid'); 
+      res.clearCookie('connect.sid');
       res.json({ message: "Logout successful" });
     });
   });

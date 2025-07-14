@@ -24,6 +24,7 @@ const Home = () => {
   const progressRef = useRef<HTMLDivElement>(null);
 
   const fetchRecordings = async () => {
+    console.log(user)
     try {
       setLoading(true);
       const response = await axios.get(
