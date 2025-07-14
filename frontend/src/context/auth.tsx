@@ -16,15 +16,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true); // ← new
 
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/status`, {
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
         });
 
         if (response.ok) {
@@ -35,6 +34,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } catch (error) {
         console.error('Auth status check failed:', error);
+      } finally {
+        setLoading(false); 
       }
     };
 
@@ -53,6 +54,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(null);
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>  
+  }
 
   return (
     <AuthContext.Provider value={{ user, setUser, logout }}>
