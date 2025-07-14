@@ -40,7 +40,6 @@ const Login = () => {
             ...prev,
             [name]: value,
         }))
-        // Clear error when user starts typing
         if (error) setError("")
     }
 
@@ -51,7 +50,7 @@ const Login = () => {
         setSuccess(false)
 
         try {
-            const response = await axios.post(`http://localhost:3000/login`, form, {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}login`, form, {
                 withCredentials: true
             })
             

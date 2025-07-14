@@ -36,7 +36,8 @@ const corsOptions = {
     'https://voice-rec-frontend.onrender.com',
     'https://voice-rec-front.onrender.com',
     'http://localhost:10000',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'https://www.anonymousrecording.com/'
   ],
   credentials: true,
   optionsSuccessStatus: 200,
