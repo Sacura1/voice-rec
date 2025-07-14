@@ -1,6 +1,7 @@
 import{ useState, useRef, useEffect } from 'react';
 import { Mic, MicOff, Play, Pause, Download, Trash2, Send } from 'lucide-react';
 import { useParams } from 'react-router-dom';
+import axios from 'axios';
 
 const VoiceRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -156,15 +157,19 @@ const VoiceRecorder = () => {
     formData.append('audio', audioBlob, `recording-${Date.now()}.webm`);
     formData.append('duration', duration.toString());
     formData.append('timestamp', new Date().toISOString());
-    formData.append('username', username ?? '')
+    formData.append('username', username ?? '');
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/upload-recording`, {
-        method: 'POST',
-        body: formData
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/upload-recording`,
+        formData,
+        {
+          withCredentials: true,
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }
+      );
 
-      if (response.ok) {
+      if (response.status === 200) {
         alert('Recording sent successfully!');
       } else {
         throw new Error('Failed to send recording');

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Play, Pause, Download, Clock, User, Headphones, X, SkipBack, SkipForward } from "lucide-react";
 import { useAuth } from "../context/auth";
+import axios from "axios";
 
 
 interface Recording {
@@ -25,11 +26,11 @@ const Home = () => {
   const fetchRecordings = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/recordings/`,{
-        credentials: "include"
-      });
-      const data = await response.json();
-      setRecordings(data.recordings || []);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/recordings/`,
+        { withCredentials: true }
+      );
+      setRecordings(response.data.recordings || []);
       setError(null);
     } catch (err) {
       console.error('Error fetching recordings:', err);

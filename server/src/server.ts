@@ -32,7 +32,8 @@ dotenv.config()
 
 const corsOptions = {
   origin: [
-    'https://voice-rec-front.onrender.com'
+    'https://voice-rec-front.onrender.com',
+    'http://localhost:10000'
     
   ],
   credentials: true,
@@ -182,7 +183,7 @@ app.post("/upload-recording", upload.single('audio'), async (req: Request, res: 
     await fs.promises.unlink(req.file.path);
 
     await db.query(
-      `INSERT INTO messages(rec_username, audio, date_time) VALUES ($1, $2, $3)`,
+      `INSERT INTO recordings(username, audio, created_at) VALUES ($1, $2, $3)`,
       [username, fileBuffer, timestamp]
     );
 
@@ -202,7 +203,7 @@ app.get("/recordings", async (req: Request, res: Response): Promise<any> => {
     }
 
     const result = await db.query(
-      `SELECT audio, date_time FROM messages WHERE rec_username = $1 ORDER BY date_time DESC`,
+      `SELECT audio, created_at FROM recordings WHERE username = $1 ORDER BY date_time DESC`,
       [username]
     );
 
