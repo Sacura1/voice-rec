@@ -50,7 +50,7 @@ const Login = () => {
         setSuccess(false)
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}login`, form, {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/login`, form, {
                 withCredentials: true
             })
             
@@ -128,7 +128,9 @@ const Login = () => {
                             type="submit"
                             onClick={handleSubmit}
                             disabled={isLoading}
-                            className="w-full relative overflow-hidden bg-white text-black font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:bg-gray-100 active:scale-95 group disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full relative overflow-hidden
+                             bg-white text-black font-semibold py-3 px-4 rounded-xl transition-all 
+                             duration-200 hover:bg-gray-100 active:scale-95 group disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <span className="relative z-10">
                                 {isLoading ? "Signing In..." : "Sign In"}
